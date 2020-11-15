@@ -1,0 +1,9 @@
+<resources>
+    <string name="app_name">Ex1</string>
+    <string name="message">메롱이다 인마</string>
+    <string name="message2">두번째 페이지다 인마</string>
+    <string name="message3">2페이지로</string>
+    <string name="btn1">글씨 바꾸는 버튼</string>
+    <string name="btn2">화면 전환 버튼</string>
+    <string name="btn3">1페이지로 ㄱ</string>
+</resources>
