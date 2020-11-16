@@ -20,6 +20,7 @@
         android:textColorHint="#726E89">
 
         <com.google.android.material.textfield.TextInputEditText
+            android:id="@+id/txtid"
             android:layout_width="300dp"
             android:layout_height="wrap_content"
             android:layout_gravity="center_horizontal"
@@ -38,6 +39,7 @@
         android:textColorHint="#726E89">
 
         <com.google.android.material.textfield.TextInputEditText
+            android:id="@+id/txtpass"
             android:layout_width="300dp"
             android:layout_height="wrap_content"
             android:layout_gravity="center_horizontal"
@@ -49,6 +51,7 @@
     </com.google.android.material.textfield.TextInputLayout>
 
     <Button
+        android:id="@+id/btn_login"
         android:layout_width="300dp"
         android:layout_height="62dp"
         android:layout_gravity="center_horizontal"
