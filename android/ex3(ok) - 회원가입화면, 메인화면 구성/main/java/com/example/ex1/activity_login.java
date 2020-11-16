@@ -21,6 +21,7 @@ public class activity_login extends AppCompatActivity {
     TextInputEditText text_id;
     TextInputEditText text_password;
     TextView signup;
+    TextView forgetpass;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -31,6 +32,7 @@ public class activity_login extends AppCompatActivity {
         text_id=findViewById(R.id.txtid);
         text_password=findViewById(R.id.txtpass);
         signup=findViewById(R.id.register);
+        forgetpass=findViewById(R.id.forgetpassword);
 
 
         btn_login.setOnClickListener(new View.OnClickListener() {
@@ -76,6 +78,13 @@ public class activity_login extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 Intent intent=new Intent(activity_login.this, activity_register.class);//액티비티 전환
+                startActivity(intent);
+            }
+        });
+        forgetpass.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent=new Intent(activity_login.this, activity_password.class);//액티비티 전환
                 startActivity(intent);
             }
         });
