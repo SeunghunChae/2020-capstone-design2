@@ -6,7 +6,7 @@
     <title>Document</title>
 </head>
 <body>
-    <div>Teachable Machine Pose Model</div>
+    <div>k-health</div>
 <button type="button" onclick="init()">Start</button>
 <div><canvas id="canvas"></canvas></div>
 <div id="label-container"></div>
@@ -54,6 +54,8 @@
         window.requestAnimationFrame(loop);
     }
 
+    var status = "stand"
+    var count = 0
     async function predict() {
         // Prediction #1: run input through posenet
         // estimatePose can take in an image, video or canvas html element
@@ -61,6 +63,23 @@
         // Prediction 2: run input through teachable machine classification model
         const prediction = await model.predict(posenetOutput);
 
+        if(prediction[0].probability.toFixed(2)>0.9)
+        {
+            if(status =="squat"){
+                count++
+                var audio = new Audio(count%10 + '.mp3');
+                audio.play();
+            }
+            status = "stand"
+        } else if(prediction[1].probability.toFixed(2)>0.9)
+        {
+            status = "squat"
+        } else if(prediction[2].probability.toFixed(2)>0.95)
+        {
+            var audio = new Audio('wrong.mp3');
+            audio.play();
+            status="bent"
+        }
         for (let i = 0; i < maxPredictions; i++) {
             const classPrediction =
                 prediction[i].className + ": " + prediction[i].probability.toFixed(2);
