@@ -63,7 +63,7 @@
         // Prediction 2: run input through teachable machine classification model
         const prediction = await model.predict(posenetOutput);
 
-        if(prediction[0].probability.toFixed(2)>0.9)
+        if(prediction[0].probability.toFixed(2)==1)
         {
             if(status =="squat"){
                 count++
@@ -71,10 +71,10 @@
                 audio.play();
             }
             status = "stand"
-        } else if(prediction[1].probability.toFixed(2)>0.9)
+        } else if(prediction[1].probability.toFixed(2)==1)
         {
             status = "squat"
-        } else if(prediction[2].probability.toFixed(2)>0.95)
+        } else if(prediction[2].probability.toFixed(2)==1)
         {
             var audio = new Audio('wrong.mp3');
             audio.play();
