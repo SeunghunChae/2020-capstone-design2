@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>K-HEALTH</title>
+</head>
+<body style = "text-align:center">
+    <div style="text-align:center; font-size:50px">k-health</div>
+<button type="button" onclick="graph()">graph</button>
+<button type="button" onclick="location.href='https://k-health.netlify.app'">BACK</button>
+<div><canvas width = '400' height='400' id="mainGraph"></canvas></div>
+<div></div>
+<div id="label-container"></div>
+<script type="text/javascript">
+//운동추이 화면
+//키:날짜, 밸류:운동횟수 로 저장
+	
+	function graph(){
+			const canvas = document.getElementById('mainGraph');
+		const ctx = canvas.getContext('2d');
+
+		var width = canvas.clientWidth;
+		var height = canvas.clientHeight;
+
+		var position = {
+			min_x : width * 0.1,
+			max_x : width * 0.9,
+			min_y : height * 0.9,
+			min_y : height * 0.1
+		}
+
+		//사용자의 입력값 
+		var value = [90, 50, 60];
+		var wid = 50;//넓이
+
+		ctx.beginPath();
+
+		value.forEach((data, idx) => {
+			var devide = idx / value.length;
+			ctx.strokeRect(position.min_x + position.max_x *devide, position.max_y * (1-(data/100)), wid, position.max_y - position.max_y*(1-(data/100)));
+		});
+	}
+
+
+
+
+    async function grapgOn() {
+		mystorage = window.localStorage
+		var today = new Date();
+		document.write(today+"<br>");
+        const size = 600;
+        window.requestAnimationFrame(loop);
+		const canvas = document.getElementById("mainGraph");
+		canvas.width = size; canvas.height = size;
+		labelContainer = document.getElementById("label-container");
+		labelContainer.appendChild(document.createElement("div"));
+		getData();
+
+    }
+
+    var count = 0
+
+    async function getData() {
+		if(mystorage.getItem('countSquart')!=null){
+			var squart = mystorage.getItem(today);
+			labelContainer.childNodes[0].innerHTML = squart;
+		}
+    }
+
+</script>
+
+</body>
+</html>

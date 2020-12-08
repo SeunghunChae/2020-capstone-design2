@@ -7,8 +7,10 @@
 </head>
 <body style = "text-align:center">
     <div style="text-align:center; font-size:50px">k-health</div>
-<button type="button" onclick="init()">Start</button>
-<div><canvas id="canvas"></canvas></div>
+<button type="button" onclick="exerciseOn()">START</button>
+<button type="button" onclick="location.href='https://sleepy-pike-69cdf1.netlify.app'">STATE</button>
+<div><canvas id="maincamera"></canvas></div>
+<div></div>
 <div id="label-container"></div>
 <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@1.3.1/dist/tf.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@teachablemachine/pose@0.8/dist/teachablemachine-pose.min.js"></script>
@@ -20,7 +22,9 @@
     const URL = "./my_model/";
     let model, webcam, ctx, labelContainer, maxPredictions;
 
-    async function init() {
+    async function exerciseOn() {
+		var today = new Date();
+		mystorage = window.localStorage
         const modelURL = URL + "model.json";
         const metadataURL = URL + "metadata.json";
 
@@ -31,7 +35,7 @@
         maxPredictions = model.getTotalClasses();
 
         // Convenience function to setup a webcam
-        const size = 200;
+        const size = 600;
         const flip = true; // whether to flip the webcam
         webcam = new tmPose.Webcam(size, size, flip); // width, height, flip
         await webcam.setup(); // request access to the webcam
@@ -39,7 +43,8 @@
         window.requestAnimationFrame(loop);
 
         // append/get elements to the DOM
-        const canvas = document.getElementById("canvas");
+		//카메라 밑 자세 비율
+        const canvas = document.getElementById("maincamera");
         canvas.width = size; canvas.height = size;
         ctx = canvas.getContext("2d");
         labelContainer = document.getElementById("label-container");
@@ -48,10 +53,13 @@
         }
     }
 
+	async function textOn(){}
+
     async function loop(timestamp) {
         webcam.update(); // update the webcam frame
         await predict();
         window.requestAnimationFrame(loop);
+
     }
 
     var status = "stand"
@@ -59,15 +67,24 @@
     async function predict() {
         // Prediction #1: run input through posenet
         // estimatePose can take in an image, video or canvas html element
+		// 웹캠으로 사용자 모델 판별
         const { pose, posenetOutput } = await model.estimatePose(webcam.canvas);
         // Prediction 2: run input through teachable machine classification model
         const prediction = await model.predict(posenetOutput);
 
+		//if(mystorage.getItem('countSquart')!=null){
+		//	var squart = mystorage.getItem('countSquart');
+		//	labelContainer.childNodes[maxPredictions].innerHTML = squart;
+		//}
+
+		//포즈별 반응
         if(prediction[0].probability.toFixed(2)>0.9)
         {
             if(status =="squat"){
                 count++
                 var audio = new Audio(count%10 + '.mp3');
+				//로컬스토리지에 갯수저장
+				mystorage.setItem(today, count);
                 audio.play();
             }
             status = "stand"
@@ -76,6 +93,7 @@
             status = "squat"
         } else if(prediction[2].probability.toFixed(2)==1)
         {
+		//자세가 잘못되어있을 경우 잘못되었음을 알리는 목소리가 반복되어 울림 한번만 울리도록 교체
             var audio = new Audio('wrong.mp3');
             audio.play();
             status="bent"
@@ -85,10 +103,13 @@
                 prediction[i].className + ": " + prediction[i].probability.toFixed(2);
             labelContainer.childNodes[i].innerHTML = classPrediction;
         }
+		
 
         // finally draw the poses
         drawPose(pose);
     }
+
+
 
     function drawPose(pose) {
         if (webcam.canvas) {
