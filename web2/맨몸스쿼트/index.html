@@ -4,57 +4,196 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>K-HEALTH</title>
+	<script src="https://cdn.jsdelivr.net/npm/chart.js@2.8.0"></script>
 </head>
+<style>
+	#im_hover{
+			width: 50px;
+			height: auto;
+			padding : 5px;
+			border: 1px solid rgb(177, 177, 177);
+			position: absolute;
+			display: none;
+			background: rgba(111,231,43,0.5);
+			border-radius: 5px;
+	}
+</style>
 <body style = "text-align:center">
     <div style="text-align:center; font-size:50px">k-health</div>
-<button type="button" onclick="graph()">graph</button>
-<button type="button" onclick="location.href='https://k-health.netlify.app'">BACK</button>
+<button type="button" onclick="location.href='https://k-health.netlify.app'" style="width:=90pt; height:20pt">BACK</button>
 <div><canvas width = '400' height='400' id="mainGraph"></canvas></div>
+<div id='im_hover'></div>
 <div></div>
 <div id="label-container"></div>
+
+
+<script>    
+    const canvas = document.getElementById('mainGraph');
+    const ctx = canvas.getContext('2d');
+   
+    var width = canvas.clientWidth;
+    var height = canvas.clientHeight;
+
+    var position = {
+        min_x : width * 0.1,
+        max_x : width * 0.9,
+        min_y : height * 0.1,
+        max_y : height * 0.9
+    }
+    var wid = 50;
+
+	//운동데이터
+	var date = ['12/3', '12/4', '12/5']
+    var value = [20, 50, 60];
+
+    function drawing(){
+        var virtualVal = value.slice().map((arg)=>1); 
+        var adder = 0;
+        var interval = setInterval(() => {
+            ctx.clearRect(0, 0, width, height);  //추가
+            virtualVal.forEach( (data, idx) => {
+                var devide = idx / value.length ;
+                if(value[idx] > data){
+                    data++;
+                    virtualVal[idx] = data;   
+                }
+                var my_pos = commonCal(devide, data);
+                ctx.strokeRect(my_pos[0], my_pos[1], my_pos[2],my_pos[3]);
+            });  
+            var chekcer = virtualVal.slice().map((arg)=>false);
+            virtualVal.forEach( (data1, idx1) => {
+                value.forEach( (data2, idx2) => {
+                    if(data1 >= data2 && idx1 == idx2){
+                        chekcer[idx1] = true;
+                    }
+                });
+            }); 
+            var breaker = true;
+            chekcer.forEach( arg => {
+                if(!arg){
+                    breaker = false;
+                }
+            });     
+            if(breaker){
+                console.log('fin');
+                clearInterval(interval);
+                makeText()
+            }
+        }, 10);        
+    }
+
+    drawing();
+
+    function makeText(){
+        date.forEach((data, idx) =>{
+            var devide = idx / value.length;
+            var len = (wid/2) - ctx.measureText(data+'').width / 2;
+            ctx.strokeText(data, position.min_x + position.max_x*devide + len, position.max_y + position.min_y/2);
+        });
+    }
+    
+    function hoverDrawing(hoverIdx){
+        ctx.clearRect(0,0,width, height);
+        value.forEach( (data, idx) => {
+            ctx.save();
+            if(idx == hoverIdx){
+                ctx.strokeStyle = 'blue';
+            }
+            var devide = idx / value.length;
+            var my_pos = commonCal(devide, data);
+            ctx.strokeRect(my_pos[0], my_pos[1], my_pos[2],my_pos[3]);            
+            ctx.restore();
+        });      
+        makeText();  
+    }
+
+    var drawed = false;
+    canvas.addEventListener('mousemove', function (event) {
+        var x1 = event.clientX - canvas.offsetLeft;
+        var y1 = event.clientY - canvas.offsetTop;        
+        var inn = isInsideRect(x1, y1);
+        //console.log(inn);
+        if (inn.result) {
+            drawed = true;
+            hoverDrawing(inn.index);
+            toolTipMaker(inn.value, event.clientX, event.clientY, true);
+        } else {
+            if(drawed){
+                hoverDrawing(-1);
+                toolTipMaker(0, 0, 0, false);
+            }
+        }
+    }); 
+
+    function isInsideRect(x1, y1){
+        var result = false;
+        var index = -1;
+        var showValue = -1;
+        for(var i=0; i < value.length;i++){
+            var data = value[i];
+
+            var devide = i / value.length ;
+            var start_x = position.min_x + position.max_x*devide;
+            var end_x = start_x + wid;
+
+            var start_y = position.max_y* ( 1-(data/100) );
+            var end_y = position.max_y ; 
+            
+            if(x1 >= start_x && x1 <= end_x){  
+
+                if(y1 >= start_y && y1 <= end_y){
+                    result = true;
+                    index = i;
+                    showValue = data;
+                    break;
+                }
+            } 
+        }
+        return {result:result, index:index, value:showValue};
+    }
+
+	//그래프에 마우스를 올렸을 때 툴팁보여줌
+    function toolTipMaker(text, pos_x, pos_y, onOff){
+        var hover = document.getElementById('im_hover');
+        if(!onOff){
+            hover.style.display = 'none';
+            hover.innerHTML = '';
+        } else {
+            hover.style.display = 'block';
+            hover.style.left =  pos_x + pos_x*0.02; //너무 딱 달라붙어서 간격을 주었다.
+            hover.style.top = pos_y + pos_y*0.02; //너무 딱 달라붙어서 간격을 주었다.
+            hover.innerHTML = text;
+        }
+    }
+    
+
+    function commonCal(devide, data){
+        return [
+            position.min_x + position.max_x*devide, 
+            position.max_y* ( 1-(data/100) ), 
+            wid, 
+            position.max_y - position.max_y* ( 1-(data/100) )
+        ];
+    }
+
+</script>
+
+
 <script type="text/javascript">
-//운동추이 화면
-//키:날짜, 밸류:운동횟수 로 저장
-	
-	function graph(){
-			const canvas = document.getElementById('mainGraph');
-		const ctx = canvas.getContext('2d');
-
-		var width = canvas.clientWidth;
-		var height = canvas.clientHeight;
-
-		var position = {
-			min_x : width * 0.1,
-			max_x : width * 0.9,
-			min_y : height * 0.9,
-			min_y : height * 0.1
-		}
-
-		//사용자의 입력값 
-		var value = [90, 50, 60];
-		var wid = 50;//넓이
-
-		ctx.beginPath();
-
-		value.forEach((data, idx) => {
-			var devide = idx / value.length;
-			ctx.strokeRect(position.min_x + position.max_x *devide, position.max_y * (1-(data/100)), wid, position.max_y - position.max_y*(1-(data/100)));
-		});
-	}
 
 
-
-
-    async function grapgOn() {
+    async function graphOn() {
 		mystorage = window.localStorage
-		var today = new Date();
-		document.write(today+"<br>");
+		var time = new Date();
+		var year = time.getFullYear();
+		var month = (time.getMonth()+1);
+		var date = time.getDate();
+		var today = year + "/" + month + "/" + date + "\n";
         const size = 600;
-        window.requestAnimationFrame(loop);
 		const canvas = document.getElementById("mainGraph");
 		canvas.width = size; canvas.height = size;
 		labelContainer = document.getElementById("label-container");
-		labelContainer.appendChild(document.createElement("div"));
+		labelContainer.innerHTML = today + mystorage.getItem(today);
 		getData();
 
     }
